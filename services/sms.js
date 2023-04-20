@@ -1,4 +1,3 @@
-import { CollectionResponsePublicTeamNoPaging } from '@hubspot/api-client/lib/codegen/settings/users/index.js';
 import { updateTimeLine } from './hubspot.js';
 export const sendSms = async (messaging, sender, text, to, campaign) => {
   const vonageNumber = { type: 'sms', number: 'test' };

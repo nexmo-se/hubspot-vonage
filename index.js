@@ -83,15 +83,39 @@ app.post('/onMessage', async (req, res) => {
 });
 
 app.post('/work', async (req, res) => {
-  const text = req.body?.fields?.staticInput;
+  const text = req.body?.fields?.templatename;
   const type = req.query?.type;
-  const params = JSON.parse(req.body?.fields?.staticInput2);
+  const params = req.body?.fields?.bodyparams ? JSON.parse(req.body?.fields?.bodyparams) : [];
+  const url = req.body?.fields?.URL;
+  const urlType = req.body?.fields?.staticInput4;
+  const headerParams = req.body?.fields?.staticInput5;
   const to = req.body?.object?.properties?.phone;
   const components = [];
   const parametersFormated = [];
-  console.log(text);
 
+  if (headerParams) {
+    const headerParamsFormated = [];
+    // for (let parameter in headerParams) {
+    headerParamsFormated.push({ type: 'text', text: headerParams });
+    // }
+    components.push({
+      type: 'header',
+      parameters: headerParamsFormated,
+    });
+  }
+
+  if (url && urlType) {
+    const urlObject = {};
+    urlObject['headerUrl'] = url;
+    urlObject['type'] = urlType;
+    components.push({
+      type: 'header',
+      parameters: [getHeaderUrl(urlObject)],
+    });
+  }
   const name = text.split(' (')[0];
+  const regExp = /\(([^)]+)\)/;
+  const lang = regExp.exec(text)[1];
   for (let parameter in params) {
     parametersFormated.push({ type: 'text', text: params[parameter] });
   }
@@ -108,7 +132,7 @@ app.post('/work', async (req, res) => {
       template: {
         name: name,
         language: {
-          code: 'en',
+          code: lang,
           policy: 'deterministic',
         },
         components: components,
@@ -226,7 +250,8 @@ app.post('/sendMessage', comesFromHubspot, async (req, res) => {
       .execute();
     console.log(response);
     const id = response.message_uuid;
-    await updateTimeLine(id, from, text, to, userId);
+    const timestamp = response.timestamp;
+    await updateTimeLine(id, from, text, to, userId, timestamp);
 
     res.json({ res: 'okay' });
   } catch (e) {
@@ -250,15 +275,23 @@ app.post('/templates-workflows', async (req, res) => {
     const templates = await getTemplates();
     const newTemplates = templates.map((template) => {
       const templateFormat = formatTemplate(template);
+
       const paramsObject = { params: [] };
       const numberParamsBody = templateFormat.numberParams || 0;
       for (let i = 1; i <= numberParamsBody; i++) {
         paramsObject.params.push(`{{${i}}}`);
       }
+      //${JSON.stringify(paramsObject)}
       return {
-        name: `${template.name} (${template.language}) ${JSON.stringify(paramsObject)}`,
+        name: `${template.name} (${template.language}) params:${paramsObject.params.length} ${
+          templateFormat.headerType === 'IMAGE' || templateFormat.headerType === 'VIDEO' || templateFormat.headerType === 'FILE'
+            ? `${templateFormat.headerType}URL`
+            : ''
+        }`,
       };
     });
+    // console.log(newTemplates);
+
     const templatesForHubspot = newTemplates.map((e) => {
       return { label: e.name, description: e.name, value: e.name };
     });

@@ -63,7 +63,7 @@ const getToken = async () => {
   }
 };
 
-export const updateTimeLine = async (id, from, smsContent, to, objectId) => {
+export const updateTimeLine = async (id, from, smsContent, to, objectId, timestamp) => {
   try {
     const hubspotClient = new Client();
     const token = await getToken();
@@ -76,6 +76,7 @@ export const updateTimeLine = async (id, from, smsContent, to, objectId) => {
         from: from,
         tonumber: to,
         smsId: id,
+        timestamp: timestamp,
       },
     };
     //   const TimelineEvent = { eventTemplateId: "1123354", email: "test@gmail.com", tokens, extraData, timelineIFrame };
