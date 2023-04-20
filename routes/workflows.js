@@ -17,9 +17,9 @@ export default function Router(app, messaging, neru, Queue) {
       const id = req.body?.object?.objectId;
       const to = req.body?.object?.properties?.phone;
       const textTemplate = req.body?.fields?.templatename;
-      const name = textTemplate.split(' (')[0];
+      const name = textTemplate?.split(' (')[0];
       const regExp = /\(([^)]+)\)/;
-      const lang = regExp.exec(textTemplate)[1];
+      const lang = regExp.exec(textTemplate)?.[1];
 
       const params = req.body?.fields?.bodyparams ? JSON.parse(req.body?.fields?.bodyparams) : [];
       const url = req.body?.fields?.URL;
@@ -44,8 +44,6 @@ export default function Router(app, messaging, neru, Queue) {
   });
   router.post('/consumer', async (req, res) => {
     try {
-      console.log('consuming');
-
       const { text, type, phone, to, id, campaign, componentsFormatted, name, lang } = req.body;
 
       if (type === 'sms') {
@@ -53,12 +51,11 @@ export default function Router(app, messaging, neru, Queue) {
         console.log(resp);
         const message_id = resp.message_uuid;
         const timestamp = resp.timestamp;
-        if (message_id && phone && text && to && id) await updateTimeLine(message_id, phone, text, to, id, timestamp);
+
+        if (message_id && phone && text && to && id) await updateTimeLine(message_id, phone, text, to, id, timestamp, campaign);
         res.sendStatus(200);
       }
       if (type === 'whatsapp') {
-        console.log('sending wa');
-
         const resp = await sendWa(messaging, phone, to, componentsFormatted, name, lang);
         console.log(resp);
         res.sendStatus(200);

@@ -23,16 +23,6 @@ const messaging = new Messages(sess);
 const listenMessages = async () => {
   const vonageNumber = { type: 'sms', number: '447520660729' };
   const from = { type: 'sms', number: null };
-  // await messaging.listenMessages(from, vonageNumber, 'onMessage').execute();
-  // await messaging
-  //   .listenMessages(
-  //     { type: null, number: null },
-  //     {
-  //       type: null,
-  //       number: '447520660729',
-  //     },
-  //     '/onMessage'
-  //   )
   await messaging
     .listenMessages(
       { type: null, number: null },
@@ -80,83 +70,6 @@ app.post('/onMessage', async (req, res) => {
   } catch (e) {
     res.sendStatus(500);
   }
-});
-
-app.post('/work', async (req, res) => {
-  const text = req.body?.fields?.templatename;
-  const type = req.query?.type;
-  const params = req.body?.fields?.bodyparams ? JSON.parse(req.body?.fields?.bodyparams) : [];
-  const url = req.body?.fields?.URL;
-  const urlType = req.body?.fields?.staticInput4;
-  const headerParams = req.body?.fields?.staticInput5;
-  const to = req.body?.object?.properties?.phone;
-  const components = [];
-  const parametersFormated = [];
-
-  if (headerParams) {
-    const headerParamsFormated = [];
-    // for (let parameter in headerParams) {
-    headerParamsFormated.push({ type: 'text', text: headerParams });
-    // }
-    components.push({
-      type: 'header',
-      parameters: headerParamsFormated,
-    });
-  }
-
-  if (url && urlType) {
-    const urlObject = {};
-    urlObject['headerUrl'] = url;
-    urlObject['type'] = urlType;
-    components.push({
-      type: 'header',
-      parameters: [getHeaderUrl(urlObject)],
-    });
-  }
-  const name = text.split(' (')[0];
-  const regExp = /\(([^)]+)\)/;
-  const lang = regExp.exec(text)[1];
-  for (let parameter in params) {
-    parametersFormated.push({ type: 'text', text: params[parameter] });
-  }
-  components.push({
-    type: 'body',
-    parameters: parametersFormated,
-  });
-  const vonageNumber = { type: 'whatsapp', number: process.env.number };
-
-  const custom = {
-    message_type: 'custom',
-    custom: {
-      type: 'template',
-      template: {
-        name: name,
-        language: {
-          code: lang,
-          policy: 'deterministic',
-        },
-        components: components,
-      },
-    },
-  };
-
-  try {
-    const response = await messaging
-      .send({
-        message_type: 'custom',
-        to: to,
-        from: vonageNumber.number,
-        channel: vonageNumber.type,
-        ...custom,
-      })
-      .execute();
-
-    console.log(response);
-  } catch (e) {
-    console.log(e);
-  }
-
-  res.sendStatus(200);
 });
 
 app.get('/list', async (req, res) => {
@@ -251,7 +164,7 @@ app.post('/sendMessage', comesFromHubspot, async (req, res) => {
     console.log(response);
     const id = response.message_uuid;
     const timestamp = response.timestamp;
-    await updateTimeLine(id, from, text, to, userId, timestamp);
+    await updateTimeLine(id, from, text, to, userId, timestamp, (clientref = null));
 
     res.json({ res: 'okay' });
   } catch (e) {
@@ -285,7 +198,7 @@ app.post('/templates-workflows', async (req, res) => {
       return {
         name: `${template.name} (${template.language}) params:${paramsObject.params.length} ${
           templateFormat.headerType === 'IMAGE' || templateFormat.headerType === 'VIDEO' || templateFormat.headerType === 'FILE'
-            ? `${templateFormat.headerType}URL`
+            ? `${templateFormat.headerType}_URL`
             : ''
         }`,
       };
