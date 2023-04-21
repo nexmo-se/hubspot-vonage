@@ -51,8 +51,7 @@ export default function Router(app, messaging, neru, Queue) {
         console.log(resp);
         const message_id = resp.message_uuid;
         const timestamp = resp.timestamp;
-
-        if (message_id && phone && text && to && id) await updateTimeLine(message_id, phone, text, to, id, timestamp, campaign);
+        if (message_id && phone && text && to && id) await updateTimeLine(message_id, phone, text, to, id, campaign);
         res.sendStatus(200);
       }
       if (type === 'whatsapp') {

@@ -63,11 +63,12 @@ const getToken = async () => {
   }
 };
 
-export const updateTimeLine = async (id, from, smsContent, to, objectId, timestamp, clientref) => {
+export const updateTimeLine = async (id, from, smsContent, to, objectId, clientref) => {
   try {
     const hubspotClient = new Client();
     const token = await getToken();
     hubspotClient.setAccessToken(token);
+
     const timeLineEvent = {
       eventTemplateId: '1223967',
       objectId: objectId,
@@ -76,11 +77,11 @@ export const updateTimeLine = async (id, from, smsContent, to, objectId, timesta
         from: from,
         tonumber: to,
         smsId: id,
-        timestamp: timestamp,
-        clientref: clientref,
+        // timestamp: timestamp,
+        clientref: clientref || 'custom_message',
       },
     };
-    //   const TimelineEvent = { eventTemplateId: "1123354", email: "test@gmail.com", tokens, extraData, timelineIFrame };
+
     const timeLine = await hubspotClient.crm.timeline.eventsApi.create(timeLineEvent);
     console.log(timeLine);
     return timeLine;

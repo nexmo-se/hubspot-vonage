@@ -10,10 +10,11 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 import { basicAuth, comesFromHubspot } from './services/auth.js';
+import { sendSms } from './services/sms.js';
 import { getTemplates } from './services/templates.js';
 import { updateHubspotLastContacted, updateTimeLine } from './services/hubspot.js';
 import { getMessagesReport, getRecords } from './services/reports.js';
-import { sendWa } from './services/wa';
+import { sendWa } from './services/wa.js';
 import indexRouter from './routes/index.js';
 import workflowRouter from './routes/workflows.js';
 import { isEmpty, formatTemplate, getNumberParams, formatNumber, getHeaderUrl } from './utils.js';
@@ -114,14 +115,11 @@ app.post('/create', async (req, res) => {
 app.get('/queue', async (req, res) => {
   const session = neru.createSession();
   const queueApi = new Queue(session);
-
   const result = await queueApi.getQueueDetails('hubspot').execute();
-
   res.send(result);
 });
 
 app.use('/', indexRouter());
-
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/send', comesFromHubspot, async (req, res) => {
@@ -148,27 +146,17 @@ app.post('/sendMessage', comesFromHubspot, async (req, res) => {
   try {
     const { text, to, channel, sender, userId } = req.body;
     console.log('sending message to user ' + userId);
-
+    const clientref = null;
+    const campaign = null;
     const vonageNumber = { type: channel, number: process.env.number };
     console.log('sending ' + text + ' via ' + channel);
     const from = sender ? sender : vonageNumber.number;
-    const response = await messaging
-      .send({
-        message_type: 'text',
-        to: to,
-        from: from,
-        channel: vonageNumber.type,
-        text: text,
-      })
-      .execute();
-    console.log(response);
+    const response = await sendSms(messaging, from, text, to, campaign);
     const id = response.message_uuid;
-    const timestamp = response.timestamp;
-    await updateTimeLine(id, from, text, to, userId, timestamp, (clientref = null));
-
+    await updateTimeLine(id, from, text, to, userId, clientref);
     res.json({ res: 'okay' });
   } catch (e) {
-    console.log(e);
+    console.log(`error sending message: ${e}`);
     const error = new Error(e.response.data.detail);
     res.status(500).json({ error: error.message });
   }
@@ -210,14 +198,11 @@ app.post('/send-template', async (req, res) => {
       parameters: headerParamsFormated,
     });
   }
-
   components.push({
     type: 'body',
     parameters: parametersFormated,
   });
-
   const resp = sendWa(messaging, process.env.number, to, components, name, language);
-
   res.json({ res: 'okay' });
 });
 

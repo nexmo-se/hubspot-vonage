@@ -6,7 +6,7 @@ export const sendSms = async (messaging, sender, text, to, campaign) => {
   try {
     const response = await messaging
       .send({
-        client_ref: campaign,
+        client_ref: campaign || undefined,
         message_type: 'text',
         to: to,
         from: sender ? sender : vonageNumber.number,
