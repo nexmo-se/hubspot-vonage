@@ -8,6 +8,23 @@ export const isEmpty = (obj) => {
   return Object.keys(obj).length === 0;
 };
 
+export const listenMessages = async (messaging) => {
+  try {
+    await messaging
+      .listenMessages(
+        { type: null, number: null },
+        {
+          type: null,
+          number: process.env.number,
+        },
+        '/onMessage'
+      )
+      .execute();
+  } catch (e) {
+    console.log('error listening inbound messages');
+  }
+};
+
 export const formatNumber = (number) => {
   if (!number.startsWith('+')) {
     return `34${number}`;
