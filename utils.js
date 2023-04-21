@@ -24,6 +24,33 @@ export const getNumberParams = (text) => {
   return text.match(/[{{]/gi)?.length / 2 || undefined;
 };
 
+export const getHeaderUrl = (urlObject) => {
+  if (urlObject?.type === 'IMAGE') {
+    return {
+      type: urlObject?.type?.toLowerCase(),
+      image: {
+        link: urlObject?.headerUrl,
+      },
+    };
+  }
+  if (urlObject?.type === 'DOCUMENT') {
+    return {
+      type: urlObject?.type?.toLowerCase(),
+      document: {
+        link: urlObject?.headerUrl,
+      },
+    };
+  }
+  if (urlObject?.type === 'VIDEO') {
+    return {
+      type: urlObject?.type?.toLowerCase(),
+      video: {
+        link: urlObject?.headerUrl,
+      },
+    };
+  }
+};
+
 export const formatTemplate = (template) => {
   let headerParams, urlNeeded, headerText;
   try {

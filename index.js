@@ -13,9 +13,10 @@ import { basicAuth, comesFromHubspot } from './services/auth.js';
 import { getTemplates } from './services/templates.js';
 import { updateHubspotLastContacted, updateTimeLine } from './services/hubspot.js';
 import { getMessagesReport, getRecords } from './services/reports.js';
+import { sendWa } from './services/wa';
 import indexRouter from './routes/index.js';
 import workflowRouter from './routes/workflows.js';
-import { isEmpty, formatTemplate, getNumberParams, formatNumber } from './utils.js';
+import { isEmpty, formatTemplate, getNumberParams, formatNumber, getHeaderUrl } from './utils.js';
 
 const sess = neru.createSession();
 const messaging = new Messages(sess);
@@ -33,7 +34,6 @@ const listenMessages = async () => {
       '/onMessage'
     )
     .execute();
-  // await messaging.onMessage('onMessage', from, vonageNumber).execute();
 };
 listenMessages();
 
@@ -183,36 +183,6 @@ app.get('/templates', comesFromHubspot, async (req, res) => {
   }
 });
 
-app.post('/templates-workflows', async (req, res) => {
-  try {
-    const templates = await getTemplates();
-    const newTemplates = templates.map((template) => {
-      const templateFormat = formatTemplate(template);
-
-      const paramsObject = { params: [] };
-      const numberParamsBody = templateFormat.numberParams || 0;
-      for (let i = 1; i <= numberParamsBody; i++) {
-        paramsObject.params.push(`{{${i}}}`);
-      }
-      //${JSON.stringify(paramsObject)}
-      return {
-        name: `${template.name} (${template.language}) params:${paramsObject.params.length} ${
-          templateFormat.headerType === 'IMAGE' || templateFormat.headerType === 'VIDEO' || templateFormat.headerType === 'FILE'
-            ? `${templateFormat.headerType}_URL`
-            : ''
-        }`,
-      };
-    });
-    // console.log(newTemplates);
-
-    const templatesForHubspot = newTemplates.map((e) => {
-      return { label: e.name, description: e.name, value: e.name };
-    });
-    res.send({ options: templatesForHubspot, searchable: true });
-  } catch (e) {
-    res.status(500);
-  }
-});
 app.post('/send-template', async (req, res) => {
   const { params: parameters, to, name, urlObject, headerParameters, language } = req.body;
   let components = [];
@@ -246,63 +216,40 @@ app.post('/send-template', async (req, res) => {
     parameters: parametersFormated,
   });
 
-  const vonageNumber = { type: 'whatsapp', number: process.env.number };
+  const resp = sendWa(messaging, process.env.number, to, components, name, language);
 
-  const custom = {
-    message_type: 'custom',
-    custom: {
-      type: 'template',
-      template: {
-        name: name,
-        language: {
-          code: language,
-          policy: 'deterministic',
-        },
-        components: components,
-      },
-    },
-  };
-
-  const response = await messaging
-    .send({
-      message_type: 'custom',
-      to: to,
-      from: vonageNumber.number,
-      channel: vonageNumber.type,
-      ...custom,
-    })
-    .execute();
   res.json({ res: 'okay' });
 });
 
-const getHeaderUrl = (urlObject) => {
-  if (urlObject?.type === 'IMAGE') {
-    return {
-      type: urlObject?.type?.toLowerCase(),
-      image: {
-        link: urlObject?.headerUrl,
-      },
-    };
-  }
-  if (urlObject?.type === 'DOCUMENT') {
-    return {
-      type: urlObject?.type?.toLowerCase(),
-      document: {
-        link: urlObject?.headerUrl,
-      },
-    };
-  }
-  if (urlObject?.type === 'VIDEO') {
-    return {
-      type: urlObject?.type?.toLowerCase(),
-      video: {
-        link: urlObject?.headerUrl,
-      },
-    };
-  }
-};
-
 app.use(basicAuth);
+
+app.post('/templates-workflows', async (req, res) => {
+  try {
+    const templates = await getTemplates();
+    const newTemplates = templates.map((template) => {
+      const templateFormat = formatTemplate(template);
+
+      const paramsObject = { params: [] };
+      const numberParamsBody = templateFormat.numberParams || 0;
+      for (let i = 1; i <= numberParamsBody; i++) {
+        paramsObject.params.push(`{{${i}}}`);
+      }
+      return {
+        name: `${template.name} (${template.language}) params:${paramsObject.params.length} ${
+          templateFormat.headerType === 'IMAGE' || templateFormat.headerType === 'VIDEO' || templateFormat.headerType === 'FILE'
+            ? `${templateFormat.headerType}_URL`
+            : ''
+        }`,
+      };
+    });
+    const templatesForHubspot = newTemplates.map((e) => {
+      return { label: e.name, description: e.name, value: e.name };
+    });
+    res.send({ options: templatesForHubspot, searchable: true });
+  } catch (e) {
+    res.status(500);
+  }
+});
 
 app.use('/workflows', workflowRouter(app, messaging, neru, Queue));
 
