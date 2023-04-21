@@ -9,16 +9,7 @@ export const updateHubspotLastContacted = async (number, objectKey) => {
     const token = await getToken();
     hubspotClient.setAccessToken(token);
     const id = await getContactByPhoneNumber(number, token);
-
-    console.log('updating ' + id);
-    //   const id = result.results[0].id;
-    const updateResult = await hubspotClient.crm.contacts.basicApi.update(
-      id,
-      objectKey
-      // properties: {
-      //   replied: timestamp,
-      // },
-    );
+    const updateResult = await hubspotClient.crm.contacts.basicApi.update(id, objectKey);
   } catch (e) {
     console.log(e);
     return e.message;
@@ -77,13 +68,11 @@ export const updateTimeLine = async (id, from, smsContent, to, objectId, clientr
         from: from,
         tonumber: to,
         smsId: id,
-        // timestamp: timestamp,
         clientref: clientref || 'custom_message',
       },
     };
 
     const timeLine = await hubspotClient.crm.timeline.eventsApi.create(timeLineEvent);
-    console.log(timeLine);
     return timeLine;
   } catch (e) {
     console.log('error updating timeline');
