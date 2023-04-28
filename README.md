@@ -10,33 +10,13 @@ You need to have a developer account to be able to create applications.
 
 1. Create public application. See steps below
 
-First, you need to select your application name. Then you can navigate to the Auth tab. In the auth tab, you need to fill in the Redirect URL. Use first a dummy value such as google.com (This is needed so that we can create the application and get the clientId and clientSecret). Select `crm.objects.contacts.read` as scope. Hit on save and copy the clientId and clientSecret into the `neru.yml` file. You can deploy the server side application now.
+First, you need to select your application name. Then you can navigate to the Auth tab. In the auth tab, you need to fill in the Redirect URL. Use first a dummy value such as google.com (This is needed so that we can create the application and get the clientId and clientSecret). Select `crm.objects.contacts.read, crm.objects.contacts.write, cr.schemas.schemas.read, cr.schemas.schemas.write` as scope. Hit on save and copy the clientId and clientSecret into the `neru.yml` file. You can deploy the server side application now.
 
 2. Deploy the neru app.
 
 3. Add the neru app URL (instance host address 2) followed by `/oauth-callback` URL in the Redirect URL. Like this `${neruApp}/oauth-callback`.
-4. On the left hand-side click on CRM cards
-5. Create a CRM card called Send Message and another one called Conversation History.
 
-   ![CRM Cards](https://github.com/nexmo-se/hubspot-integration/blob/main/public/images/crmcards.png)
-
-6. Configure the Send Message Card as per the picture below and in the Fetch URL set `${neruAppUrl}/info`
-
-![Send Message Card](https://github.com/nexmo-se/hubspot-integration/blob/main/public/images/sendmessacard.png)
-
-6.1 In the Send Message Card, hit on the Custom actions Tab and add your `${neruAppUrl}` as a base URL under Base Action URLs.
-
-![Send Message Card](https://github.com/nexmo-se/hubspot-integration/blob/main/public/images/sendmessageaction.png)
-
-7. Configure the Conversation History Card as per the picture below and in the Fetch URL set `${neruAppUrl}/history`
-
-![History](https://github.com/nexmo-se/hubspot-integration/blob/main/public/images/historycard.png)
-
-Then configure the card properties as per the screenshot below.
-
-![Card properties](https://github.com/nexmo-se/hubspot-integration/blob/main/public/images/cardproperties.png)
-
-8. Grab the install URL from your app Auth tab and navigate to that URL. You need to have a separate (non-dev) account to install the application.
+4. Grab the install URL from your app Auth tab and navigate to that URL. You need to have a separate (non-dev) account to install the application.
 
 Once the app is installed, you should be able to see the new CRM cards when you navigate to the Contacts tab in hubspot.
 
