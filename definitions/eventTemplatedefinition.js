@@ -1,0 +1,53 @@
+export const eventTemplateDef = {
+  name: 'SMS submitted',
+  headerTemplate: 'SMS submitted.  \n\n',
+  detailTemplate:
+    '######  Message ID: {{smsId}}   \n######  From: {{from}}  \n######  Message : {{smsContent}}  \n######  To: {{tonumber}}   \n######  Campaign: {{clientref}}   \n\n',
+  tokens: [
+    {
+      label: 'Campaign',
+      objectPropertyName: null,
+      options: [],
+      name: 'clientref',
+      type: 'string',
+      //   createdAt: '2023-04-20T14:41:31.935Z',
+      //   updatedAt: '2023-04-20T14:41:43.551Z',
+    },
+    {
+      label: 'from',
+      objectPropertyName: null,
+      options: [],
+      name: 'from',
+      type: 'string',
+      //   createdAt: '2023-04-13T13:35:35.515Z',
+      //   updatedAt: '2023-04-20T14:41:43.560Z',
+    },
+    {
+      label: 'smsContent',
+      objectPropertyName: null,
+      options: [],
+      name: 'smsContent',
+      type: 'string',
+      //   createdAt: '2023-04-13T13:35:35.529Z',
+      //   updatedAt: '2023-04-20T14:41:43.570Z',
+    },
+    {
+      label: 'smsId',
+      objectPropertyName: null,
+      options: [],
+      name: 'smsId',
+      type: 'string',
+      //   createdAt: '2023-04-13T13:35:35.507Z',
+      //   updatedAt: '2023-04-20T14:41:43.579Z',
+    },
+    {
+      label: 'tonumber',
+      objectPropertyName: null,
+      options: [],
+      name: 'tonumber',
+      type: 'string',
+      //   createdAt: '2023-04-13T13:35:35.522Z',
+      //   updatedAt: '2023-04-20T14:41:43.590Z',
+    },
+  ],
+};

@@ -3,7 +3,12 @@ const router = express.Router();
 import axios from 'axios';
 import request from 'request-promise-native';
 import NodeCache from 'node-cache';
-import { smsDefinition } from '../workflowdefinition.js';
+import { smsDefinition } from '../definitions/workflowdefinition.js';
+import { waDefinition } from '../definitions/whatsappdefinition.js';
+import { sendSmsCard } from '../definitions/sendsmscard.js';
+import { conversationHistory } from '../definitions/conversationHistory.js';
+import { neru, State } from 'neru-alpha';
+import { createTemplateTimeLine, createCrmCard } from '../services/hubspot.js';
 //===========================================================================//
 //  HUBSPOT APP CONFIGURATION
 //
@@ -91,22 +96,50 @@ export default function Router() {
     console.log('starting installation');
 
     try {
-      const data = JSON.stringify(smsDefinition);
-      const config = {
-        method: 'post',
-        url: `https://api.hubspot.com/automation/v4/actions/${process.env.appId}?hapikey=${process.env.hubspot_apikey}`,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        data: data,
-      };
-      const responseData = await axios(config);
-      if (responseData.data) res.send('Thank you for installing the app');
+      const smsDefResponse = await installCustomAction(smsDefinition);
+      const instanceState = neru.getInstanceState();
+      const id = await instanceState.get('templateId');
+      const smsCard = await instanceState.get('smsCard');
+      const conversationHistory = await instanceState.get('conversationHistory');
+      if (!smsCard) {
+        await createCrmCard('smsCard', sendSmsCard);
+        await instanceState.set('smsCard', smsCardResponse.id);
+        console.log('created send sms card');
+      }
+
+      if (!conversationHistory) {
+        const conversationHistoryCard = await createCrmCard('conversationHistory', conversationHistory);
+        await instanceState.set('conversationHistory', conversationHistoryCard.id);
+        console.log('created conversation history card');
+      }
+      if (!id) {
+        const response = await createTemplateTimeLine();
+        if (response.id) console.log('created timeline template ');
+      }
+      if (process.env.channels.split(',').indexOf('whatsapp') > -1) {
+        const waDefResponse = await installCustomAction(waDefinition);
+        if (waDefResponse.data) res.send('Thank you for installing the app');
+      }
+      if (smsDefResponse.data && process.env.channels.split(',').indexOf('whatsapp') === -1) res.send('Thank you for installing the app');
     } catch (e) {
       console.log(e);
       res.sendStatus(500).send(e.data.message);
     }
   });
+
+  const installCustomAction = async (definition) => {
+    const data = JSON.stringify(definition);
+    const config = {
+      method: 'post',
+      url: `https://api.hubspot.com/automation/v4/actions/${process.env.appId}?hapikey=${process.env.hubspot_apikey}`,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      data: data,
+    };
+    const responseData = await axios(config);
+    return responseData;
+  };
 
   const exchangeForTokens = async (userId, exchangeProof) => {
     try {

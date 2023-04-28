@@ -17,6 +17,7 @@ import templateWorkflows from './routes/templates-wf.js';
 import sendSMSRouter from './routes/sendMessage.js';
 import sendWAtemplate from './routes/sendTemplate.js';
 import { listenMessages } from './utils.js';
+import { createTemplateTimeLine } from './services/hubspot.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

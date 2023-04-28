@@ -12,7 +12,9 @@ export default function Router() {
         console.log('message received', req.body);
         updateHubspotLastContacted(number, {
           properties: {
-            replied: timestamp,
+            // replied: timestamp
+            // replieddate: timestamp.split('T')[0],
+            lastreplieddate: timestamp,
           },
         });
         updateHubspotLastContacted(number, {
