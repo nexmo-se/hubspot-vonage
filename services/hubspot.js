@@ -73,15 +73,18 @@ export const createTemplateTimeLine = async () => {
   }
 };
 
-export const createCrmCard = async (definition, type) => {
+export const createCrmCard = async (type, definition) => {
   try {
     const hubspotClient = new Client({ accessToken: await getToken(), developerApiKey: process.env.hubspot_apikey });
     const cardCreation = await hubspotClient.crm.extensions.cards.cardsApi.create(process.env.appId, definition);
-    if (cardCreation.id) {
-      const instanceState = neru.getInstanceState();
-      await instanceState.set(type, cardCreation.id);
-    }
+    return cardCreation;
+    // if (cardCreation.id) {
+    //   const instanceState = neru.getInstanceState();
+    //   await instanceState.set(type, cardCreation.id);
+    // }
   } catch (e) {
+    console.log(e);
+
     console.log(`error creating ${type} card : ${e}`);
   }
 };

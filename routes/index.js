@@ -23,6 +23,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
 const CLIENT_SECRET = process.env.signature;
 const refreshTokenStore = {};
 const accessTokenCache = new NodeCache({ deleteOnExpire: true });
+const instanceState = neru.getInstanceState();
 // Scopes for this app will default to `crm.objects.contacts.read`
 // To request others, set the SCOPE environment variable instead
 let SCOPES = ['crm.objects.contacts.read'];
@@ -97,36 +98,70 @@ export default function Router() {
 
     try {
       const smsDefResponse = await installCustomAction(smsDefinition);
-      const instanceState = neru.getInstanceState();
-      const id = await instanceState.get('templateId');
-      const smsCard = await instanceState.get('smsCard');
-      const conversationHistory = await instanceState.get('conversationHistory');
-      if (!smsCard) {
-        await createCrmCard('smsCard', sendSmsCard);
-        await instanceState.set('smsCard', smsCardResponse.id);
-        console.log('created send sms card');
-      }
-
-      if (!conversationHistory) {
-        const conversationHistoryCard = await createCrmCard('conversationHistory', conversationHistory);
-        await instanceState.set('conversationHistory', conversationHistoryCard.id);
-        console.log('created conversation history card');
-      }
-      if (!id) {
-        const response = await createTemplateTimeLine();
-        if (response.id) console.log('created timeline template ');
-      }
-      if (process.env.channels.split(',').indexOf('whatsapp') > -1) {
-        const waDefResponse = await installCustomAction(waDefinition);
-        if (waDefResponse.data) res.send('Thank you for installing the app');
-      }
-      if (smsDefResponse.data && process.env.channels.split(',').indexOf('whatsapp') === -1) res.send('Thank you for installing the app');
+      const cardsInstalled = await installCards();
+      const installStuff = await installOptionalStuff();
+      res.send('Thank you for installing the app');
+      // if (smsDefResponse.data && process.env.channels.split(',').indexOf('whatsapp') === -1) res.send('Thank you for installing the app');
     } catch (e) {
       console.log(e);
-      res.sendStatus(500).send(e.data.message);
+      res.sendStatus(500).send(e);
     }
   });
 
+  const installOptionalStuff = async () => {
+    const id = await instanceState.get('templateId');
+    return new Promise(async (res, rej) => {
+      try {
+        if (!id) {
+          const response = await createTemplateTimeLine();
+          if (response.id) console.log('created timeline template ');
+        }
+        if (process.env.channels.split(',').indexOf('whatsapp') > -1) {
+          const waDefResponse = await installCustomAction(waDefinition);
+          // if (waDefResponse.data) res.send('Thank you for installing the app');
+        }
+        res();
+      } catch (e) {
+        console.log('error installing optional stuff');
+        console.log(e);
+
+        rej(e);
+      }
+    });
+  };
+
+  const installCards = async () => {
+    await instanceState.delete('smsCard');
+    await instanceState.delete('conversationHistory');
+    const smsCard = await instanceState.get('smsCard');
+    const conversationHistoryResponse = await instanceState.get('conversationHistory');
+
+    return new Promise(async (res, rej) => {
+      try {
+        if (!smsCard) {
+          const smsCardResponse = await createCrmCard('smsCard', sendSmsCard);
+          await instanceState.set('smsCard', smsCardResponse.id);
+          console.log('created send sms card');
+        }
+
+        if (!conversationHistoryResponse) {
+          console.log(conversationHistoryResponse);
+
+          const conversationHistoryCard = await createCrmCard('conversationHistory', conversationHistory);
+          console.log(conversationHistoryCard);
+
+          await instanceState.set('conversationHistory', conversationHistoryCard.id);
+          console.log('created conversation history card');
+          res();
+        }
+      } catch (e) {
+        console.log('error installing crm cards');
+        console.log(e);
+
+        rej(e);
+      }
+    });
+  };
   const installCustomAction = async (definition) => {
     const data = JSON.stringify(definition);
     const config = {
