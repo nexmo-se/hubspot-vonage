@@ -2,6 +2,7 @@ import { Client } from '@hubspot/api-client';
 import axios from 'axios';
 import { eventTemplateDef } from '../definitions/eventTemplatedefinition.js';
 import { neru, State } from 'neru-alpha';
+const instanceState = neru.getInstanceState();
 
 export const updateHubspotLastContacted = async (number, objectKey) => {
   try {
@@ -40,6 +41,7 @@ const getContactByPhoneNumber = async (number, token) => {
 
 const getToken = async () => {
   const hubspotClient = new Client();
+  const refreshToken = await instanceState.get('refresh_token');
   try {
     const results = await hubspotClient.oauth.tokensApi.createToken(
       'refresh_token',
@@ -47,7 +49,7 @@ const getToken = async () => {
       undefined,
       process.env.CLIENT_ID,
       process.env.signature,
-      process.env.refresh_token
+      refreshToken
     );
     const token = results.accessToken;
     return token;

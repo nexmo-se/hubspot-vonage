@@ -109,6 +109,7 @@ export default function Router() {
   });
 
   const installOptionalStuff = async () => {
+    await instanceState.delete('templateId');
     const id = await instanceState.get('templateId');
     return new Promise(async (res, rej) => {
       try {
@@ -145,8 +146,6 @@ export default function Router() {
         }
 
         if (!conversationHistoryResponse) {
-          console.log(conversationHistoryResponse);
-
           const conversationHistoryCard = await createCrmCard('conversationHistory', conversationHistory);
           console.log(conversationHistoryCard);
 
@@ -188,7 +187,9 @@ export default function Router() {
       // Usually, this token data should be persisted in a database and associated with
       // a user identity.
       const tokens = JSON.parse(responseBody);
-      console.log(tokens);
+      console.log(tokens.refresh_token);
+      const resp = await instanceState.set('refresh_token', tokens.refresh_token);
+      console.log(resp);
 
       refreshTokenStore[userId] = tokens.refresh_token;
       accessTokenCache.set(userId, tokens.access_token, Math.round(tokens.expires_in * 0.75));
