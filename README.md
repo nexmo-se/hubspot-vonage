@@ -10,7 +10,7 @@ You need to have a developer account to be able to create applications.
 
 1. Create public application. See steps below
 
-First, you need to select your application name. Then you can navigate to the Auth tab. In the auth tab, you need to fill in the Redirect URL. Use first a dummy value such as google.com (This is needed so that we can create the application and get the clientId and clientSecret). Select `crm.objects.contacts.read, crm.objects.contacts.write, cr.schemas.schemas.read, cr.schemas.schemas.write` as scope. Hit on save and copy the clientId and clientSecret into the `neru.yml` file. You can deploy the server side application now.
+First, you need to select your application name. Then you can navigate to the Auth tab. In the auth tab, you need to fill in the Redirect URL. Use first a dummy value such as google.com (This is needed so that we can create the application and get the clientId and clientSecret). Select `crm.objects.contacts.read, crm.objects.contacts.write, cr.schemas.schemas.read, crm.schemas.schemas.write` as scope. Hit on save and copy the clientId and clientSecret into the `neru.yml` file. You can deploy the server side application now.
 
 2. Deploy the neru app.
 
