@@ -56,7 +56,12 @@ export default function Router(app, messaging, neru, Queue) {
       }
       if (type === 'whatsapp') {
         const resp = await sendWa(messaging, phone, to, componentsFormatted, name, lang);
+        const message_id = resp.message_uuid;
         console.log(resp);
+        if (message_id && to && id) await updateTimeLine(message_id, 'whatsApp_number', name, to, id, campaign);
+        else {
+          console.log(phone, to, id, message_id);
+        }
         res.sendStatus(200);
       }
     } catch (e) {
