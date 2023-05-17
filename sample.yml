@@ -33,8 +33,6 @@ instance:
       value: hubspot
     - name: appId
       value: 123242
-    - name: refresh_token
-      value: eu1-a3443-sdsdsds-123243
 
 debug:
   name: debug
