@@ -13,7 +13,10 @@ export default function Router(messaging) {
       const campaign = null;
       const vonageNumber = { type: channel, number: process.env.number };
       if (channel === 'whatsapp') {
-        await sendWaFreeForm(messaging, text, to, channel, sender);
+        const resp = await sendWaFreeForm(messaging, text, to, channel, sender);
+        const id = resp.message_uuid;
+        await updateTimeLine(id, 'WhatsApp_number', text, vonageNumber.number, userId, clientref);
+
         return res.json({ res: 'okay' });
       }
       console.log('sending ' + text + ' via ' + channel);

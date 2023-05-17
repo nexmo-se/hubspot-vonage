@@ -1,6 +1,6 @@
 export const eventTemplateDef = {
   name: 'SMS submitted',
-  headerTemplate: 'SMS submitted.  \n\n',
+  headerTemplate: 'Message submitted.  \n\n',
   detailTemplate:
     '######  Message ID: {{smsId}}   \n######  From: {{from}}  \n######  Message : {{smsContent}}  \n######  To: {{tonumber}}   \n######  Campaign: {{clientref}}   \n\n',
   tokens: [
