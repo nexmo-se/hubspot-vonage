@@ -91,6 +91,44 @@ export const createCrmCard = async (type, definition) => {
   }
 };
 
+export const getContactByDealAssigned = async (dealId) => {
+  try {
+    if (!dealId) return;
+    const token = await getToken();
+    console.log(token);
+    console.log('getting phone for deal: ' + dealId);
+
+    const data = {
+      properties: ['phone'],
+      filterGroups: [
+        {
+          filters: [
+            {
+              propertyName: 'associations.deal',
+              operator: 'EQ',
+              value: dealId,
+            },
+          ],
+        },
+      ],
+    };
+    const response = await axios.post(`https://api.hubapi.com/crm/v3/objects/contacts/search`, data, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (response.data.results.length) {
+      console.log(response.data.results[0]);
+
+      return response.data.results[0].properties.phone;
+    }
+  } catch (e) {
+    console.log('error retrieving phone number for deal');
+    throw new Error(e.message);
+  }
+};
+
 export const updateTimeLine = async (id, from, smsContent, to, objectId, clientref) => {
   try {
     const hubspotClient = new Client();

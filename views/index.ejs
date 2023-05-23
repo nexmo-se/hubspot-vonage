@@ -41,6 +41,7 @@
         const templateLanguage = templateLang?.innerText;
         const template = document.getElementById('templateName');
         const to = document.getElementById('toField').innerText;
+        const userId = document.getElementById('userId').innerText;
 
         const templateName = template?.innerText;
         const imageUrl = document.getElementById('IMAGEUrl');
@@ -96,6 +97,7 @@
               language: templateLanguage,
               urlObject,
               headerParameters,
+              userId
             }),
           };
 

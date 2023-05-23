@@ -1,8 +1,9 @@
-import { neru, Messages, Queue } from 'neru-alpha';
+import { neru, Messages, Queue, State } from 'neru-alpha';
 import express from 'express';
 import bodyParser from 'body-parser';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import axios from 'axios';
 
 import { basicAuth } from './services/auth.js';
 import indexRouter from './routes/index.js';
@@ -25,6 +26,7 @@ const app = express();
 const port = process.env.NERU_APP_PORT;
 const sess = neru.createSession();
 const messaging = new Messages(sess);
+const instanceState = neru.getInstanceState();
 
 listenMessages(messaging);
 
@@ -52,6 +54,26 @@ app.use('/history', historyRouter());
 app.use('/templates-workflows', templateWorkflows());
 app.use('/workflows', workflowRouter(app, messaging, neru, Queue));
 
-app.listen(port, () => {
+app.listen(port, async () => {
+  const queueCreated = await instanceState.get('createdQueue');
+  const config = {
+    method: 'post',
+    url: `https://${process.env.INSTANCE_SERVICE_NAME}.${process.env.REGION.split('.')[1]}.serverless.vonage.com/queues/create`,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  };
+  try {
+    if (!queueCreated) {
+      console.log('no queue found. Creating it queue');
+      const response = await axios(config);
+      if (response.data) console.log('created queue ');
+      instanceState.set('createdQueue', true);
+    } else {
+      console.log('queue found');
+    }
+  } catch (e) {
+    console.log(e);
+  }
   console.log(`App listening on port ${port}`);
 });

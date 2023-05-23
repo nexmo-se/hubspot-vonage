@@ -18,7 +18,7 @@ export default function Router(session, neru, Queue) {
       res.sendStatus(201);
     } catch (e) {
       console.log(e.message);
-      res.status.send(e.message);
+      res.status(500).send(e.message);
     }
   });
   router.get('/queue', async (req, res) => {
