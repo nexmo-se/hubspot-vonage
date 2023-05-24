@@ -2,7 +2,7 @@ import { getAuth, OneWeekAgo } from '../utils.js';
 import axios from 'axios';
 export const getRecords = (direction, phone) => {
   let url;
-
+  if (!phone) return;
   const baseUrl = `https://api.nexmo.com/v2/reports/records?account_id=${process.env.apiKey}&limit=${
     process.env.limit
   }&product=MESSAGES&include_message=true&date_start=${OneWeekAgo()}&direction=${direction}`;
