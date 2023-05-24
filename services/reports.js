@@ -41,6 +41,7 @@ export const getMessagesReport = (results) => {
       from: r.from,
       to: r.to,
       message_body: r.message_body ? r.message_body : 'template',
+      status: r.status ? r.status : 'inbound',
     });
   });
   return responseObj.results.sort(function (a, b) {

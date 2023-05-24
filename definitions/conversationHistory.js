@@ -35,6 +35,12 @@ export const conversationHistory = {
         dataType: 'STRING',
         options: [],
       },
+      {
+        name: 'status',
+        label: 'status',
+        dataType: 'STRING',
+        options: [],
+      },
     ],
   },
   actions: {
